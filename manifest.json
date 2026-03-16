@@ -1,11 +1,11 @@
 {
-  "name": "Game Hub - Offline Games",
-  "short_name": "Game Hub",
-  "description": "Offline-First Gaming Experience mit Drive Mad, Poly-Track und Escape Road",
+  "name": "Escape Road - Offline Game",
+  "short_name": "Escape Road",
+  "description": "Escape Road - Hindernissen ausweichen und Power-Ups sammeln. Funktioniert komplett offline!",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d1b2a",
-  "theme_color": "#0d1b2a",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
   "orientation": "any",
   "icons": [
     {
@@ -43,44 +43,6 @@
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Drive Mad",
-      "short_name": "Drive Mad",
-      "description": "Spiele Drive Mad",
-      "url": "/Drive-Mad/index.html",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Poly-Track",
-      "short_name": "Poly-Track",
-      "description": "Spiele Poly-Track",
-      "url": "/Poly-Track/index.html",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Escape Road",
-      "short_name": "Escape Road",
-      "description": "Spiele Escape Road",
-      "url": "/Escape-Road/index.html",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
     }
   ]
 }

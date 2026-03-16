@@ -16,3 +16,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Old hub styles (no longer needed)
+style.css
