@@ -2,6 +2,7 @@
 create-icons.js
 create-png-icons.py
 generate-icons.html
+validate-setup.js
 
 # Node modules if any
 node_modules/
