@@ -3,150 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Offline-First Game Hub - Play Drive Mad, Poly-Track, and Escape Road">
-    <meta name="theme-color" content="#0d1b2a">
-    <title>Game Hub - Offline Games</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Escape Road - Offline Spiel">
+    <meta name="theme-color" content="#667eea">
+    <title>Escape Road - Offline Game</title>
+    <link rel="stylesheet" href="Escape-Road/style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
-    <!-- Home Button (Floating) - Hidden by default, shown when game is active -->
-    <button id="homeButton" class="home-button" style="display: none;" aria-label="Zurück zum Dashboard">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-        </svg>
-    </button>
-
-    <!-- Main Dashboard View -->
-    <div id="dashboard" class="dashboard">
-        <header class="header">
-            <h1>🎮 Game Hub</h1>
-            <p class="subtitle">Offline-First Gaming Experience</p>
-            <div id="onlineStatus" class="status-indicator">
-                <span class="status-dot"></span>
-                <span class="status-text">Online</span>
-            </div>
-        </header>
-
-        <main class="game-grid">
-            <!-- Drive Mad Card -->
-            <div class="game-card" data-game="drive-mad">
-                <div class="game-preview drive-mad-preview">
-                    <svg viewBox="0 0 200 150" class="preview-svg">
-                        <!-- Car representation -->
-                        <rect x="50" y="80" width="100" height="40" fill="#ff4444" rx="5"/>
-                        <circle cx="70" cy="120" r="15" fill="#333"/>
-                        <circle cx="130" cy="120" r="15" fill="#333"/>
-                        <rect x="80" y="65" width="60" height="30" fill="#ffcccc" rx="3"/>
-                        <!-- Road -->
-                        <rect x="0" y="135" width="200" height="15" fill="#555"/>
-                        <rect x="0" y="142" width="30" height="2" fill="#fff"/>
-                        <rect x="50" y="142" width="30" height="2" fill="#fff"/>
-                        <rect x="100" y="142" width="30" height="2" fill="#fff"/>
-                        <rect x="150" y="142" width="30" height="2" fill="#fff"/>
-                    </svg>
-                </div>
-                <div class="game-info">
-                    <h2 class="game-title">Drive Mad</h2>
-                    <p class="game-description">Verrücktes Fahrspiel mit Physik-Herausforderungen</p>
-                    <div class="last-played">
-                        <small>Zuletzt gespeichert: <span class="save-time" data-game="drive-mad">Noch nie</span></small>
-                    </div>
-                    <button class="play-button" data-game="drive-mad">
-                        Spielen
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M8 5v14l11-7z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Poly-Track Card -->
-            <div class="game-card" data-game="poly-track">
-                <div class="game-preview poly-track-preview">
-                    <svg viewBox="0 0 200 150" class="preview-svg">
-                        <!-- Racing track -->
-                        <path d="M 20 100 Q 100 20 180 100" stroke="#4444ff" stroke-width="30" fill="none"/>
-                        <path d="M 20 100 Q 100 20 180 100" stroke="#6666ff" stroke-width="20" fill="none"/>
-                        <!-- Checkpoints -->
-                        <rect x="15" y="90" width="10" height="20" fill="#fff" opacity="0.8"/>
-                        <rect x="95" y="15" width="10" height="20" fill="#fff" opacity="0.8"/>
-                        <rect x="175" y="90" width="10" height="20" fill="#fff" opacity="0.8"/>
-                    </svg>
-                </div>
-                <div class="game-info">
-                    <h2 class="game-title">Poly-Track</h2>
-                    <p class="game-description">Rasantes Rennspiel mit 3D-Strecken</p>
-                    <div class="last-played">
-                        <small>Zuletzt gespeichert: <span class="save-time" data-game="poly-track">Noch nie</span></small>
-                    </div>
-                    <button class="play-button" data-game="poly-track">
-                        Spielen
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M8 5v14l11-7z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Escape Road Card -->
-            <div class="game-card" data-game="escape-road">
-                <div class="game-preview escape-road-preview">
-                    <svg viewBox="0 0 200 150" class="preview-svg">
-                        <!-- Road with obstacles -->
-                        <rect x="0" y="0" width="200" height="150" fill="#87ceeb"/>
-                        <rect x="0" y="120" width="200" height="30" fill="#6b5e54"/>
-                        <!-- Player -->
-                        <rect x="30" y="90" width="30" height="30" fill="#4db8ff" rx="3"/>
-                        <!-- Obstacles -->
-                        <rect x="100" y="90" width="30" height="30" fill="#ff4d4d" rx="3"/>
-                        <rect x="150" y="90" width="30" height="30" fill="#ff4d4d" rx="3"/>
-                        <!-- Power-up -->
-                        <circle cx="180" cy="80" r="10" fill="#ffd700"/>
-                    </svg>
-                </div>
-                <div class="game-info">
-                    <h2 class="game-title">Escape Road</h2>
-                    <p class="game-description">Hindernissen ausweichen und Power-Ups sammeln</p>
-                    <div class="last-played">
-                        <small>Zuletzt gespeichert: <span class="save-time" data-game="escape-road">Noch nie</span></small>
-                    </div>
-                    <button class="play-button" data-game="escape-road">
-                        Spielen
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M8 5v14l11-7z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </main>
-
-        <footer class="footer">
-            <p>💾 Alle Spielstände werden automatisch gespeichert</p>
-            <p class="small-text">Progressive Web App - Funktioniert zu 100% offline</p>
-        </footer>
+    <div id="info">
+        <div>Score: <span id="score">0</span></div>
+        <div>High Score: <span id="highScore">0</span></div>
     </div>
+    <canvas id="gameCanvas"></canvas>
 
-    <!-- Game Container (Hidden by default) -->
-    <div id="gameContainer" class="game-container" style="display: none;">
-        <iframe id="gameFrame"
-                frameborder="0"
-                allowfullscreen
-                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-pointer-lock allow-top-navigation-by-user-activation"></iframe>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-        <div class="spinner"></div>
-        <p id="loadingText">Spiel wird geladen...</p>
-        <p id="loadingHint" style="display: none; font-size: 0.9rem; margin-top: 10px; color: var(--text-gray);">
-            Falls das Laden lange dauert, drücke den Home-Button oben links
-        </p>
-    </div>
-
+    <script src="Escape-Road/script.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

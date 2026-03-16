@@ -1,17 +1,16 @@
 // ============================================
-// Game Hub App - Main Application Logic
+// Escape Road App - Simplified Offline Support
 // ============================================
 
-class GameHub {
+class EscapeRoadApp {
     constructor() {
         this.db = null;
-        this.currentGame = null;
         this.autoSaveInterval = null;
         this.init();
     }
 
     async init() {
-        console.log('🎮 Game Hub initializing...');
+        console.log('🎮 Escape Road initializing...');
 
         // Initialize IndexedDB
         await this.initDatabase();
@@ -19,16 +18,18 @@ class GameHub {
         // Register Service Worker
         await this.registerServiceWorker();
 
-        // Setup event listeners
-        this.setupEventListeners();
+        // Load saved game state
+        await this.restoreGameState();
 
-        // Update online/offline status
-        this.updateOnlineStatus();
+        // Start auto-save
+        this.startAutoSave();
 
-        // Load last save times for all games
-        await this.updateAllSaveTimes();
+        // Prevent accidental navigation
+        window.addEventListener('beforeunload', (e) => {
+            this.captureGameState(true); // Final save
+        });
 
-        console.log('✅ Game Hub ready!');
+        console.log('✅ Escape Road ready!');
     }
 
     // ============================================
@@ -37,7 +38,7 @@ class GameHub {
 
     async initDatabase() {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open('GameHubDB', 1);
+            const request = indexedDB.open('EscapeRoadDB', 1);
 
             request.onerror = () => {
                 console.error('❌ IndexedDB error:', request.error);
@@ -53,23 +54,23 @@ class GameHub {
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
 
-                // Create game states store
-                if (!db.objectStoreNames.contains('gameStates')) {
-                    const objectStore = db.createObjectStore('gameStates', { keyPath: 'gameName' });
+                // Create game state store
+                if (!db.objectStoreNames.contains('gameState')) {
+                    const objectStore = db.createObjectStore('gameState', { keyPath: 'id' });
                     objectStore.createIndex('lastSaved', 'lastSaved', { unique: false });
-                    console.log('📦 Created gameStates object store');
+                    console.log('📦 Created gameState object store');
                 }
             };
         });
     }
 
-    async saveGameState(gameName, state) {
+    async saveGameState(state) {
         return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(['gameStates'], 'readwrite');
-            const objectStore = transaction.objectStore('gameStates');
+            const transaction = this.db.transaction(['gameState'], 'readwrite');
+            const objectStore = transaction.objectStore('gameState');
 
             const gameData = {
-                gameName: gameName,
+                id: 'escape-road',
                 state: state,
                 lastSaved: new Date().toISOString()
             };
@@ -77,36 +78,35 @@ class GameHub {
             const request = objectStore.put(gameData);
 
             request.onsuccess = () => {
-                console.log(`💾 Game state saved for ${gameName}`);
-                this.updateSaveTime(gameName, gameData.lastSaved);
+                console.log('💾 Game state saved');
                 resolve();
             };
 
             request.onerror = () => {
-                console.error(`❌ Error saving state for ${gameName}:`, request.error);
+                console.error('❌ Error saving state:', request.error);
                 reject(request.error);
             };
         });
     }
 
-    async loadGameState(gameName) {
+    async loadGameState() {
         return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(['gameStates'], 'readonly');
-            const objectStore = transaction.objectStore('gameStates');
-            const request = objectStore.get(gameName);
+            const transaction = this.db.transaction(['gameState'], 'readonly');
+            const objectStore = transaction.objectStore('gameState');
+            const request = objectStore.get('escape-road');
 
             request.onsuccess = () => {
                 if (request.result) {
-                    console.log(`📂 Loaded state for ${gameName}`);
+                    console.log('📂 Loaded saved state');
                     resolve(request.result);
                 } else {
-                    console.log(`ℹ️ No saved state for ${gameName}`);
+                    console.log('ℹ️ No saved state found');
                     resolve(null);
                 }
             };
 
             request.onerror = () => {
-                console.error(`❌ Error loading state for ${gameName}:`, request.error);
+                console.error('❌ Error loading state:', request.error);
                 reject(request.error);
             };
         });
@@ -135,171 +135,32 @@ class GameHub {
     }
 
     // ============================================
-    // Event Listeners
+    // Game State Management
     // ============================================
 
-    setupEventListeners() {
-        // Play buttons
-        document.querySelectorAll('.play-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const gameName = e.currentTarget.getAttribute('data-game');
-                this.loadGame(gameName);
-            });
-        });
-
-        // Home button
-        document.getElementById('homeButton').addEventListener('click', () => {
-            this.returnToDashboard();
-        });
-
-        // Online/Offline status
-        window.addEventListener('online', () => this.updateOnlineStatus());
-        window.addEventListener('offline', () => this.updateOnlineStatus());
-
-        // Prevent accidental navigation
-        window.addEventListener('beforeunload', (e) => {
-            if (this.currentGame) {
-                e.preventDefault();
-                e.returnValue = '';
-                this.captureGameState(true); // Final save
-            }
-        });
-    }
-
-    // ============================================
-    // Game Loading & Management
-    // ============================================
-
-    async loadGame(gameName) {
-        console.log(`🎮 Loading game: ${gameName}`);
-
-        this.currentGame = gameName;
-
-        // Show loading indicator
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const loadingHint = document.getElementById('loadingHint');
-        loadingIndicator.style.display = 'flex';
-        loadingHint.style.display = 'none';
-
-        // Hide dashboard
-        document.getElementById('dashboard').style.display = 'none';
-
-        // Show hint after 3 seconds
-        const hintTimeout = setTimeout(() => {
-            loadingHint.style.display = 'block';
-        }, 3000);
-
-        // Get game path
-        const gamePath = this.getGamePath(gameName);
-
-        // Load game in iframe
-        const iframe = document.getElementById('gameFrame');
-
-        // Add error handling
-        let loadTimeout;
-        let hasLoaded = false;
-
-        // Set a timeout to detect loading failures
-        loadTimeout = setTimeout(() => {
-            if (!hasLoaded) {
-                console.warn(`⚠️ Game loading timeout for ${gameName}`);
-                clearTimeout(hintTimeout);
-                // Show game container anyway to avoid black screen
-                document.getElementById('loadingIndicator').style.display = 'none';
-                document.getElementById('gameContainer').style.display = 'block';
-                document.getElementById('homeButton').style.display = 'flex';
-            }
-        }, 10000); // 10 second timeout
-
-        iframe.onerror = () => {
-            console.error(`❌ Error loading game: ${gameName}`);
-            hasLoaded = true;
-            clearTimeout(loadTimeout);
-            clearTimeout(hintTimeout);
-            // Show game container anyway
-            document.getElementById('loadingIndicator').style.display = 'none';
-            document.getElementById('gameContainer').style.display = 'block';
-            document.getElementById('homeButton').style.display = 'flex';
-        };
-
-        // Wait for iframe to load
-        iframe.onload = async () => {
-            hasLoaded = true;
-            clearTimeout(loadTimeout);
-            clearTimeout(hintTimeout);
-            console.log(`✅ Game loaded: ${gameName}`);
-
-            // Hide loading, show game container
-            document.getElementById('loadingIndicator').style.display = 'none';
-            document.getElementById('gameContainer').style.display = 'block';
-            document.getElementById('homeButton').style.display = 'flex';
-
-            // Try to restore game state
-            await this.restoreGameState(gameName);
-
-            // Start auto-save
-            this.startAutoSave();
-        };
-
-        // Load the iframe AFTER setting up handlers
-        iframe.src = gamePath;
-    }
-
-    getGamePath(gameName) {
-        const paths = {
-            'drive-mad': '/Drive-Mad/index.html',
-            'poly-track': '/Poly-Track/index.html',
-            'escape-road': '/Escape-Road/index.html'
-        };
-        return paths[gameName] || '/';
-    }
-
-    async restoreGameState(gameName) {
+    async restoreGameState() {
         try {
-            const savedData = await this.loadGameState(gameName);
+            const savedData = await this.loadGameState();
 
             if (savedData && savedData.state) {
-                console.log(`🔄 Restoring state for ${gameName}`);
-                const iframe = document.getElementById('gameFrame');
+                console.log('🔄 Restoring saved game state');
 
-                // Try to inject saved state into iframe
-                try {
-                    const iframeWindow = iframe.contentWindow;
-
-                    // Restore localStorage if available
-                    if (savedData.state.localStorage) {
-                        for (const [key, value] of Object.entries(savedData.state.localStorage)) {
-                            try {
-                                iframeWindow.localStorage.setItem(key, value);
-                            } catch (e) {
-                                console.warn('Could not restore localStorage item:', key);
-                            }
+                // Wait for game to initialize
+                setTimeout(() => {
+                    try {
+                        if (window.setGameState) {
+                            window.setGameState(savedData.state.gameState);
+                            console.log('✅ Game state restored via API');
+                        } else if (window.myGame && savedData.state.gameState) {
+                            const gs = savedData.state.gameState;
+                            if (gs.score !== undefined) window.myGame.score = gs.score;
+                            if (gs.highScore !== undefined) window.myGame.highScore = gs.highScore;
+                            console.log('✅ Game state restored directly');
                         }
+                    } catch (e) {
+                        console.warn('Could not restore game state:', e);
                     }
-
-                    // For Escape Road - restore game state
-                    if (gameName === 'escape-road' && savedData.state.gameState) {
-                        setTimeout(() => {
-                            try {
-                                if (iframeWindow.setGameState) {
-                                    iframeWindow.setGameState(savedData.state.gameState);
-                                    console.log('✅ Restored game state via API');
-                                } else if (iframeWindow.myGame) {
-                                    const gs = savedData.state.gameState;
-                                    if (gs.score) iframeWindow.myGame.score = gs.score;
-                                    if (gs.highScore) iframeWindow.myGame.highScore = gs.highScore;
-                                    console.log('✅ Restored game state directly');
-                                }
-                            } catch (e) {
-                                console.warn('Could not restore game state:', e);
-                            }
-                        }, 500);
-                    }
-
-                    console.log('✅ State restored');
-                } catch (e) {
-                    console.warn('⚠️ Could not access iframe content:', e);
-                }
+                }, 1000);
             }
         } catch (error) {
             console.error('❌ Error restoring state:', error);
@@ -311,11 +172,6 @@ class GameHub {
     // ============================================
 
     startAutoSave() {
-        // Clear any existing interval
-        if (this.autoSaveInterval) {
-            clearInterval(this.autoSaveInterval);
-        }
-
         // Save every 3 seconds
         this.autoSaveInterval = setInterval(() => {
             this.captureGameState(false);
@@ -324,74 +180,31 @@ class GameHub {
         console.log('⏱️ Auto-save started (every 3 seconds)');
     }
 
-    stopAutoSave() {
-        if (this.autoSaveInterval) {
-            clearInterval(this.autoSaveInterval);
-            this.autoSaveInterval = null;
-            console.log('⏹️ Auto-save stopped');
-        }
-    }
-
     async captureGameState(isFinal = false) {
-        if (!this.currentGame) return;
-
         try {
-            const iframe = document.getElementById('gameFrame');
-            const iframeWindow = iframe.contentWindow;
-
             const state = {
                 timestamp: Date.now(),
-                url: iframe.src,
-                localStorage: {},
-                sessionStorage: {},
                 gameState: null
             };
 
-            // Try to capture localStorage
+            // Capture game state using the API
             try {
-                const localStorageData = {};
-                for (let i = 0; i < iframeWindow.localStorage.length; i++) {
-                    const key = iframeWindow.localStorage.key(i);
-                    localStorageData[key] = iframeWindow.localStorage.getItem(key);
+                if (window.getGameState) {
+                    state.gameState = window.getGameState();
+                } else if (window.myGame) {
+                    state.gameState = {
+                        score: window.myGame.score || 0,
+                        highScore: window.myGame.highScore || 0,
+                        obstacleSpeed: window.myGame.obstacleSpeed || 5,
+                        gameOver: window.myGame.gameOver || false
+                    };
                 }
-                state.localStorage = localStorageData;
             } catch (e) {
-                console.warn('⚠️ Could not access iframe localStorage');
-            }
-
-            // Try to capture sessionStorage
-            try {
-                const sessionStorageData = {};
-                for (let i = 0; i < iframeWindow.sessionStorage.length; i++) {
-                    const key = iframeWindow.sessionStorage.key(i);
-                    sessionStorageData[key] = iframeWindow.sessionStorage.getItem(key);
-                }
-                state.sessionStorage = sessionStorageData;
-            } catch (e) {
-                console.warn('⚠️ Could not access iframe sessionStorage');
-            }
-
-            // Game-specific state capture
-            if (this.currentGame === 'escape-road') {
-                try {
-                    // Try to use the API function first
-                    if (iframeWindow.getGameState) {
-                        state.gameState = iframeWindow.getGameState();
-                    } else if (iframeWindow.myGame) {
-                        state.gameState = {
-                            score: iframeWindow.myGame.score || 0,
-                            highScore: iframeWindow.myGame.highScore || 0,
-                            obstacleSpeed: iframeWindow.myGame.obstacleSpeed || 5,
-                            gameOver: iframeWindow.myGame.gameOver || false
-                        };
-                    }
-                } catch (e) {
-                    console.warn('⚠️ Could not capture Escape Road game state');
-                }
+                console.warn('⚠️ Could not capture game state');
             }
 
             // Save to IndexedDB
-            await this.saveGameState(this.currentGame, state);
+            await this.saveGameState(state);
 
             if (isFinal) {
                 console.log('💾 Final save completed');
@@ -399,94 +212,6 @@ class GameHub {
         } catch (error) {
             console.error('❌ Error capturing game state:', error);
         }
-    }
-
-    // ============================================
-    // Navigation
-    // ============================================
-
-    async returnToDashboard() {
-        console.log('🏠 Returning to dashboard');
-
-        // Final save before leaving
-        await this.captureGameState(true);
-
-        // Stop auto-save
-        this.stopAutoSave();
-
-        // Clear iframe
-        const iframe = document.getElementById('gameFrame');
-        iframe.src = 'about:blank';
-
-        // Hide game container and home button
-        document.getElementById('gameContainer').style.display = 'none';
-        document.getElementById('homeButton').style.display = 'none';
-
-        // Show dashboard
-        document.getElementById('dashboard').style.display = 'block';
-
-        // Update save time
-        await this.updateAllSaveTimes();
-
-        this.currentGame = null;
-    }
-
-    // ============================================
-    // UI Updates
-    // ============================================
-
-    updateOnlineStatus() {
-        const statusIndicator = document.getElementById('onlineStatus');
-        const statusText = statusIndicator.querySelector('.status-text');
-
-        if (navigator.onLine) {
-            statusIndicator.classList.remove('offline');
-            statusText.textContent = 'Online';
-        } else {
-            statusIndicator.classList.add('offline');
-            statusText.textContent = 'Offline';
-        }
-    }
-
-    async updateAllSaveTimes() {
-        const games = ['drive-mad', 'poly-track', 'escape-road'];
-
-        for (const gameName of games) {
-            const savedData = await this.loadGameState(gameName);
-            if (savedData && savedData.lastSaved) {
-                this.updateSaveTime(gameName, savedData.lastSaved);
-            }
-        }
-    }
-
-    updateSaveTime(gameName, isoString) {
-        const element = document.querySelector(`.save-time[data-game="${gameName}"]`);
-        if (element) {
-            const date = new Date(isoString);
-            const formatted = this.formatDate(date);
-            element.textContent = formatted;
-        }
-    }
-
-    formatDate(date) {
-        const now = new Date();
-        const diff = now - date;
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-
-        if (minutes < 1) return 'Gerade eben';
-        if (minutes < 60) return `Vor ${minutes} Minute${minutes > 1 ? 'n' : ''}`;
-        if (hours < 24) return `Vor ${hours} Stunde${hours > 1 ? 'n' : ''}`;
-        if (days < 7) return `Vor ${days} Tag${days > 1 ? 'en' : ''}`;
-
-        return date.toLocaleDateString('de-DE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
     }
 }
 
@@ -497,8 +222,8 @@ class GameHub {
 // Wait for DOM to be ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        window.gameHub = new GameHub();
+        window.escapeRoadApp = new EscapeRoadApp();
     });
 } else {
-    window.gameHub = new GameHub();
+    window.escapeRoadApp = new EscapeRoadApp();
 }
