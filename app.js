@@ -176,20 +176,57 @@ class GameHub {
         this.currentGame = gameName;
 
         // Show loading indicator
-        document.getElementById('loadingIndicator').style.display = 'flex';
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const loadingHint = document.getElementById('loadingHint');
+        loadingIndicator.style.display = 'flex';
+        loadingHint.style.display = 'none';
 
         // Hide dashboard
         document.getElementById('dashboard').style.display = 'none';
+
+        // Show hint after 3 seconds
+        const hintTimeout = setTimeout(() => {
+            loadingHint.style.display = 'block';
+        }, 3000);
 
         // Get game path
         const gamePath = this.getGamePath(gameName);
 
         // Load game in iframe
         const iframe = document.getElementById('gameFrame');
-        iframe.src = gamePath;
+
+        // Add error handling
+        let loadTimeout;
+        let hasLoaded = false;
+
+        // Set a timeout to detect loading failures
+        loadTimeout = setTimeout(() => {
+            if (!hasLoaded) {
+                console.warn(`⚠️ Game loading timeout for ${gameName}`);
+                clearTimeout(hintTimeout);
+                // Show game container anyway to avoid black screen
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'block';
+                document.getElementById('homeButton').style.display = 'flex';
+            }
+        }, 10000); // 10 second timeout
+
+        iframe.onerror = () => {
+            console.error(`❌ Error loading game: ${gameName}`);
+            hasLoaded = true;
+            clearTimeout(loadTimeout);
+            clearTimeout(hintTimeout);
+            // Show game container anyway
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            document.getElementById('homeButton').style.display = 'flex';
+        };
 
         // Wait for iframe to load
         iframe.onload = async () => {
+            hasLoaded = true;
+            clearTimeout(loadTimeout);
+            clearTimeout(hintTimeout);
             console.log(`✅ Game loaded: ${gameName}`);
 
             // Hide loading, show game container
@@ -203,6 +240,9 @@ class GameHub {
             // Start auto-save
             this.startAutoSave();
         };
+
+        // Load the iframe AFTER setting up handlers
+        iframe.src = gamePath;
     }
 
     getGamePath(gameName) {

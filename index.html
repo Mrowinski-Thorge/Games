@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Offline-First Game Hub - Play Drive Mad, Poly-Track, and Escape Road">
-    <meta name="theme-color" content="#1a1a2e">
+    <meta name="theme-color" content="#0d1b2a">
     <title>Game Hub - Offline Games</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
@@ -14,7 +14,7 @@
 <body>
     <!-- Home Button (Floating) - Hidden by default, shown when game is active -->
     <button id="homeButton" class="home-button" style="display: none;" aria-label="Zurück zum Dashboard">
-        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
     </button>
@@ -131,13 +131,20 @@
 
     <!-- Game Container (Hidden by default) -->
     <div id="gameContainer" class="game-container" style="display: none;">
-        <iframe id="gameFrame" frameborder="0" allowfullscreen></iframe>
+        <iframe id="gameFrame"
+                frameborder="0"
+                allowfullscreen
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-pointer-lock allow-top-navigation-by-user-activation"></iframe>
     </div>
 
     <!-- Loading Indicator -->
     <div id="loadingIndicator" class="loading-indicator" style="display: none;">
         <div class="spinner"></div>
-        <p>Spiel wird geladen...</p>
+        <p id="loadingText">Spiel wird geladen...</p>
+        <p id="loadingHint" style="display: none; font-size: 0.9rem; margin-top: 10px; color: var(--text-gray);">
+            Falls das Laden lange dauert, drücke den Home-Button oben links
+        </p>
     </div>
 
     <script src="app.js"></script>
