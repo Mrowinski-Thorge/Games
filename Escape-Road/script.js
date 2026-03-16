@@ -391,4 +391,23 @@ document.addEventListener("keydown", (event) => {
 
 // --- Start the game ---
 const myGame = new Game();
+
+// Add state management functions for PWA hub
+window.getGameState = function() {
+  return {
+    score: myGame.score,
+    highScore: myGame.highScore,
+    obstacleSpeed: myGame.obstacleSpeed,
+    gameOver: myGame.gameOver
+  };
+};
+
+window.setGameState = function(state) {
+  if (state) {
+    if (state.score !== undefined) myGame.score = state.score;
+    if (state.highScore !== undefined) myGame.highScore = state.highScore;
+    if (state.obstacleSpeed !== undefined) myGame.obstacleSpeed = state.obstacleSpeed;
+  }
+};
+
 myGame.gameLoop(0);

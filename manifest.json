@@ -1,0 +1,86 @@
+{
+  "name": "Game Hub - Offline Games",
+  "short_name": "Game Hub",
+  "description": "Offline-First Gaming Experience mit Drive Mad, Poly-Track und Escape Road",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "lang": "de-DE",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Drive Mad",
+      "short_name": "Drive Mad",
+      "description": "Spiele Drive Mad",
+      "url": "/Drive-Mad/index.html",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Poly-Track",
+      "short_name": "Poly-Track",
+      "description": "Spiele Poly-Track",
+      "url": "/Poly-Track/index.html",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Escape Road",
+      "short_name": "Escape Road",
+      "description": "Spiele Escape Road",
+      "url": "/Escape-Road/index.html",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
