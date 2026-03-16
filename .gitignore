@@ -1,0 +1,17 @@
+# Helper scripts (not needed for deployment)
+create-icons.js
+create-png-icons.py
+generate-icons.html
+
+# Node modules if any
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
