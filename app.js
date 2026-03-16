@@ -176,10 +176,18 @@ class GameHub {
         this.currentGame = gameName;
 
         // Show loading indicator
-        document.getElementById('loadingIndicator').style.display = 'flex';
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const loadingHint = document.getElementById('loadingHint');
+        loadingIndicator.style.display = 'flex';
+        loadingHint.style.display = 'none';
 
         // Hide dashboard
         document.getElementById('dashboard').style.display = 'none';
+
+        // Show hint after 3 seconds
+        const hintTimeout = setTimeout(() => {
+            loadingHint.style.display = 'block';
+        }, 3000);
 
         // Get game path
         const gamePath = this.getGamePath(gameName);
@@ -195,6 +203,7 @@ class GameHub {
         loadTimeout = setTimeout(() => {
             if (!hasLoaded) {
                 console.warn(`⚠️ Game loading timeout for ${gameName}`);
+                clearTimeout(hintTimeout);
                 // Show game container anyway to avoid black screen
                 document.getElementById('loadingIndicator').style.display = 'none';
                 document.getElementById('gameContainer').style.display = 'block';
@@ -206,6 +215,7 @@ class GameHub {
             console.error(`❌ Error loading game: ${gameName}`);
             hasLoaded = true;
             clearTimeout(loadTimeout);
+            clearTimeout(hintTimeout);
             // Show game container anyway
             document.getElementById('loadingIndicator').style.display = 'none';
             document.getElementById('gameContainer').style.display = 'block';
@@ -216,6 +226,7 @@ class GameHub {
         iframe.onload = async () => {
             hasLoaded = true;
             clearTimeout(loadTimeout);
+            clearTimeout(hintTimeout);
             console.log(`✅ Game loaded: ${gameName}`);
 
             // Hide loading, show game container
